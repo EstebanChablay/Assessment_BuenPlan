@@ -1,0 +1,16 @@
+{
+  "name": "buenplan-assessment",
+  "private": true,
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "test": "pnpm --filter api test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
