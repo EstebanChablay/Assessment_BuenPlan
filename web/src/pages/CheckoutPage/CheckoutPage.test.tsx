@@ -12,7 +12,6 @@ vi.mock('~/api', async (importOriginal) => {
   };
 });
 
-// Mock OrderSummary to avoid rendering complexity
 vi.mock('~/components', () => ({
   OrderSummary: () => <div data-testid="order-summary" />,
 }));
@@ -24,11 +23,7 @@ import { createOrder } from '~/api/endpoints/orders/createOrder';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Configure useApiMutation mock by discriminating on the endpoint function.
- * createMutateAsync is used for createOrder calls; confirmMutateAsync for all others.
- * isPendingCreate / isPendingConfirm control the isPending state for each mutation.
- */
+
 function mockMutations({
   createMutateAsync = vi.fn().mockResolvedValue({ id: 'order-123' }),
   confirmMutateAsync = vi
@@ -52,9 +47,6 @@ function mockMutations({
   return { createMutateAsync, confirmMutateAsync };
 }
 
-// ---------------------------------------------------------------------------
-// Shared fixture
-// ---------------------------------------------------------------------------
 const checkoutState = {
   eventId: 'evt-1',
   eventTitle: 'Test Event',
@@ -63,10 +55,7 @@ const checkoutState = {
   ],
 };
 
-/**
- * Renders CheckoutPage inside a MemoryRouter that also provides home and
- * order-confirmation routes so Navigate / navigate() calls are observable.
- */
+
 function renderCheckout(state: unknown = checkoutState) {
   return render(
     <MemoryRouter initialEntries={[{ pathname: '/events/evt-1/checkout', state }]}>
@@ -88,15 +77,11 @@ function fillForm(name = 'Juan Pérez', email = 'juan@example.com') {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 describe('CheckoutPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  // Requirement 5.2
   it('redirects to / when there is no checkout state', () => {
     mockMutations();
     renderCheckout(null);
@@ -105,7 +90,6 @@ describe('CheckoutPage', () => {
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
   });
 
-  // Requirements 5.4, 5.5
   it('calls create then confirm then navigates on valid submit', async () => {
     const { createMutateAsync, confirmMutateAsync } = mockMutations();
 
@@ -135,7 +119,6 @@ describe('CheckoutPage', () => {
     );
   });
 
-  // Requirements 5.6, 5.7
   it('shows error banner and does not navigate when API call fails', async () => {
     const { createMutateAsync } = mockMutations({
       createMutateAsync: vi.fn().mockRejectedValue(new Error('Error de servidor')),
@@ -153,7 +136,6 @@ describe('CheckoutPage', () => {
     expect(screen.queryByText('Order confirmed')).not.toBeInTheDocument();
   });
 
-  // Requirement 5.6
   it('disables submit button while mutations are in flight', () => {
     mockMutations({ isPendingCreate: true });
 

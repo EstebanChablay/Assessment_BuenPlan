@@ -44,9 +44,7 @@ export class OrdersService {
     this.timers.delete(orderId);
   }
 
-  /**
-   * Creates a pending order and holds inventory.
-   */
+
   create(dto: CreateOrderDto): Order {
     if (dto.items.length === 0) {
       throw new BadRequestException(
