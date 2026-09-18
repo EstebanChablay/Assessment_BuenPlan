@@ -18,4 +18,14 @@ export default defineConfig({
       '/v1': 'http://localhost:8000',
     },
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test-setup.ts'],
+    resolve: {
+      alias: {
+        '~': src,
+      },
+    },
+  },
 });
