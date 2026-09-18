@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -24,7 +24,7 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const selection = location.state as CheckoutState | null;
 
-  const [pendingOrderId, setPendingOrderId] = useState<string>('');
+  const pendingOrderIdRef = useRef('');
   const [apiError, setApiError] = useState<string | null>(null);
 
   const {
@@ -39,7 +39,7 @@ export function CheckoutPage() {
 
   const confirmMutation = useApiMutation<Order, { id: string }, ConfirmOrderBody>(
     confirmOrder,
-    { id: pendingOrderId },
+    () => ({ id: pendingOrderIdRef.current }),
   );
 
   if (!selection?.items.length) {
@@ -58,7 +58,7 @@ export function CheckoutPage() {
           quantity,
         })),
       });
-      setPendingOrderId(created.id);
+      pendingOrderIdRef.current = created.id;
       await confirmMutation.mutateAsync({ name: values.name, email: values.email });
       navigate(`/orders/${created.id}`);
     } catch (err) {
@@ -125,7 +125,7 @@ export function CheckoutPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

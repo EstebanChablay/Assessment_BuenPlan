@@ -21,15 +21,23 @@ type MutationOptions<T, Body> = Omit<
  */
 export const useApiMutation = <T, Args = any, Body = Record<string, unknown>>(
   endpointFn: ApiEndpointFn<Args, Body>,
-  args: Args = {} as Args,
+  args: Args | (() => Args) = {} as Args,
   options?: MutationOptions<T, Body>,
 ) => {
   const queryClient = useQueryClient();
-  const endpoint = useMemo(() => endpointFn(args), [args, endpointFn]);
+  const resolveArgs =
+    typeof args === 'function' ? (args as () => Args) : () => args;
+  const endpoint = useMemo(
+    () => endpointFn(resolveArgs()),
+    [endpointFn, resolveArgs],
+  );
 
   return useMutation<T, Error, Body>({
     mutationKey: endpoint.queryKey,
-    mutationFn: (body) => apiFetch<T>(endpoint.query(body)),
+    mutationFn: (body) => {
+      const currentEndpoint = endpointFn(resolveArgs());
+      return apiFetch<T>(currentEndpoint.query(body));
+    },
     ...options,
     onSettled: async (data, error, variables, onMutateResult, context) => {
       if (endpoint.invalidatesQuery) {
